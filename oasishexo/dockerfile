@@ -1,0 +1,47 @@
+# 使用 Python 3.9 的 Alpine 版本作为基础镜像
+FROM node:alpine
+
+
+# 设置工作目录
+WORKDIR /hexo
+
+# 将当前目录中的文件复制到工作目录中
+COPY . /hexo
+
+# 安装依赖
+#RUN pip install --no-cache-dir -r requirements.txt
+
+# 安装 bash
+RUN apk add --no-cache bash
+RUN apk add --no-cache git
+RUN apk add --no-cache rsync
+RUN apk add python3
+RUN apk add py3-pip
+RUN python3 -m venv /hexo/pip
+RUN . /hexo/pip/bin/activate && pip install Flask && pip install Flask-SocketIO && pip install Flask-CORS && pip install pytz
+
+# 安装 hexo
+RUN npm install -g hexo-cli
+# RUN npm install hexo-renderer-pug hexo-renderer-stylus --save
+
+# 创建一个博客
+RUN hexo init oasis && \
+	cd /hexo/oasis && \
+	git clone -b master https://github.com/jerryc127/hexo-theme-butterfly.git themes/butterfly && \
+	npm install hexo-renderer-pug hexo-renderer-stylus --save
+
+
+# 设置环境变量
+# ENV FLASK_APP=app.py
+
+# 暴露端口
+EXPOSE 4000
+EXPOSE 5000
+
+# 挂载路径
+VOLUME /hexo/nas
+VOLUME /hexo/nas/source
+
+# 运行应用
+# CMD ["python", "app.py"]
+CMD ["./run.sh"]

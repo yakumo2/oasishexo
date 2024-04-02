@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexo发布系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        #output {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        .custom-button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .custom-button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed; /* 使用固定表格布局 */
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            overflow: hidden;
+            white-space: nowrap; /* 不换行 */
+            text-overflow: ellipsis; /* 超出部分用省略号表示 */
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hexo发布系统</h1>
+        <div id="buttons">
+            <button class="custom-button" onclick="executeScript('/hexo/publish/pub.sh')">简单发布</button>
+            <button class="custom-button" onclick="executeScript('/hexo/publish/cleanpub.sh')">清除发布</button>
+            <button class="custom-button" onclick="terminateScript()">停止脚本</button>
+            <button class="custom-button" onclick="executeScript('/hexo/publish/hello.sh')">测试脚本</button>
+        </div>
+        <div id="output"></div>
+ <!-- 添加文件列表表格 -->
+<table>
+    <thead>
+        <tr>
+            <th>文件名</th>
+            <th>时间</th>
+            <th>路径</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for file, time, path in newest_files %}
+        <tr onclick="showFullPath(this)">
+            <td style="white-space: nowrap;">{{ file }}</td>
+            <td style="white-space: nowrap;">{{ time }}</td>
+            <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ path }}</td>
+            <td style="display: none;">{{ path }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    function showFullPath(row) {
+         var fileName = row.getElementsByTagName("td")[0].textContent;
+        var time = row.getElementsByTagName("td")[1].textContent;
+        var fullPath = row.getElementsByTagName("td")[2].textContent;
+        var fullContent = "文件名: " + fileName + "\n时间: " + time + "\n路径: " + fullPath;
+        alert(fullContent);
+    }
+</script>
+
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <script>
+        var socketProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+        var socket = io.connect(socketProtocol + document.domain + ':' + location.port);
+
+        socket.on('output', function(data) {
+            var outputDiv = document.getElementById('output');
+            outputDiv.innerHTML += '<p>' + data + '</p>';
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        });
+
+        function executeScript(scriptName) {
+            socket.emit('execute_script', scriptName);
+        }
+
+        function terminateScript() {
+            socket.emit('terminate_script');
+        }
+    </script>
+</body>
+</html>

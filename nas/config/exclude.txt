@@ -1,0 +1,15 @@
+photo
+css
+docs
+index.md
+README.md
+navigation.md
+links.md
+*.html
+*.yml
+*.json
+*.txt
+*.sh
+*sync-conflict*
+*Untitled*
+*未命名*
